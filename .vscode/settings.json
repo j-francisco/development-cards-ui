@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/b264f30d-1999-4a17-9d6e-b20b9f1e9e29/resourceGroups/jfranciscoResourceGroup/providers/Microsoft.Web/sites/DevelopmentCards",
+  "appService.deploySubpath": "build"
+}

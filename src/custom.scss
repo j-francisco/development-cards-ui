@@ -1,0 +1,13 @@
+// Override default variables before the import
+$theme-colors: (
+  info: #f56e47,
+  primary: #42a6c6,
+  warning: #f0b949,
+  success: #004f6e,
+);
+// Import Bootstrap and its default variables
+@import "~bootstrap/scss/bootstrap.scss";
+
+.navbar {
+  background-color: #004f6e;
+}
