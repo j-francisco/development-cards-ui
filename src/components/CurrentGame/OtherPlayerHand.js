@@ -39,7 +39,7 @@ const OtherPlayerCards = ({ hand }) => {
 
 const OtherPlayerHand = ({ hand }) => {
   return (
-    <div className="mt-5">
+    <div className="mt-5 mb-4">
       <h5>{hand.playerName}</h5>
       <OtherPlayerCards hand={hand} />
     </div>
