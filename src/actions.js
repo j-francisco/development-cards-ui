@@ -1,19 +1,32 @@
 import * as apiUtils from "./apiUtils";
 import { setPlayerToken, getPlayerToken, removePlayerToken } from "./tokenUtils";
+import * as actionTypes from "./actionTypes";
 
 export const setCurrentGameAction = (gameResponse) => ({
-  type: "SET_CURRENT_GAME",
+  type: actionTypes.SET_CURRENT_GAME,
   payload: gameResponse,
 });
 
 const createClearGameAction = () => ({
-  type: "CLEAR_CURRENT_GAME",
+  type: actionTypes.CLEAR_CURRENT_GAME,
 });
 
 const createErrorOnJoinOrCreateAction = (msg) => ({
-  type: "JOIN_CREATE_ERROR",
+  type: actionTypes.JOIN_CREATE_ERROR,
   payload: msg,
 });
+
+export const connectHubAction = (gameId) => ({
+  type: actionTypes.START_HUB_CONNECTION,
+  payload: gameId,
+});
+
+export const disconnectHubAction = (gameId) => ({
+  type: actionTypes.STOP_HUB_CONNECTION,
+  payload: gameId,
+});
+
+export const reconnectHubAction = (gameId) => ({ type: actionTypes.RESTART_HUB_CONNECTION });
 
 const setPlayerTokenFromResponse = (response) => {
   setPlayerToken(response.headers["x-currentplayertoken"]);
@@ -137,5 +150,13 @@ export const playCard = (gameCardId) => {
 };
 
 export const clearJoinCreateError = () => ({
-  type: "CLEAR_JOIN_CREATE_ERROR",
+  type: actionTypes.CLEAR_CURRENT_GAME,
+});
+
+export const setConnectionOpen = () => ({
+  type: "HUB_CONNECTION_OPEN",
+});
+
+export const setConnectionClosed = () => ({
+  type: "HUB_CONNECTION_CLOSED",
 });

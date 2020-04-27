@@ -11,8 +11,6 @@ import CurrentGame from "./CurrentGame";
 
 function App() {
   const currentGame = useSelector((state) => state.currentGame);
-  console.log("***");
-  console.log(currentGame);
 
   const dispatch = useDispatch();
 

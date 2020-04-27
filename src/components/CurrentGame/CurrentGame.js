@@ -1,82 +1,65 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { HubConnectionBuilder, HubConnectionState } from "@microsoft/signalr";
-import { setCurrentGameAction } from "../../actions";
+import { useDispatch, useSelector } from "react-redux";
+import { HubConnectionState } from "@microsoft/signalr";
+import { Button, Alert } from "reactstrap";
 import { gameType } from "../../types";
-import { getPlayerToken } from "../../tokenUtils";
+import { connectHubAction, disconnectHubAction, reconnectHubAction } from "../../actions";
 import OtherPlayerHand from "./OtherPlayerHand";
 import CurrentPlayerHand from "./CurrentPlayerHand";
 
 const CurrentGame = (props) => {
   const { game } = props;
+  const { gameId } = game;
   const dispatch = useDispatch();
 
-  // TODO refactor this all into redux: https://github.com/butterngo/CSharpMessageQueue/tree/master/reactjs/my-app
   useEffect(() => {
-    const setupSignalRConnection = async (gameId) => {
-      const connection = new HubConnectionBuilder()
-        .withUrl(process.env.REACT_APP_HUB_URL)
-        .withAutomaticReconnect()
-        .build();
-
-      connection.on("Message", (message) => {
-        console.log("Message", message);
-      });
-
-      connection.on("ReceiveGame", (gameResponse) => {
-        console.log("Received Game", gameResponse);
-        dispatch(setCurrentGameAction(gameResponse));
-      });
-
-      try {
-        await connection.start();
-      } catch (err) {
-        console.log("ERROR starting connection");
-        console.log(err);
-      }
-
-      const playerToken = getPlayerToken();
-
-      if (connection.state === HubConnectionState.Connected) {
-        connection.invoke("SubscribeGame", { gameId, playerToken }).catch((err) => {
-          return console.error(err.toString());
-        });
-      }
-
-      return connection;
+    const setupSignalRConnection = (gameId) => {
+      dispatch(connectHubAction(gameId));
     };
 
-    const cleanupSignalRConnection = async (gameId, connection) => {
-      const playerToken = getPlayerToken();
-      if (connection.state === HubConnectionState.Connected) {
-        try {
-          await connection.invoke("UnsubscribeGame", { gameId, playerToken });
-        } catch (err) {
-          return console.error(err.toString());
-        }
-      }
-
-      connection.off("Message");
-      connection.off("ReceiveGame");
-      connection.stop();
+    const cleanupSignalRConnection = (gameId) => {
+      dispatch(disconnectHubAction(gameId));
     };
 
-    let connection;
-    if (game && game.gameId) {
-      setupSignalRConnection(game.gameId).then((conn) => {
-        connection = conn;
-      });
+    if (gameId) {
+      setupSignalRConnection(gameId);
     }
 
     return () => {
-      if (game && game.gameId) {
-        cleanupSignalRConnection(game.gameId, connection);
+      if (gameId) {
+        cleanupSignalRConnection(gameId);
       }
     };
-  }, [dispatch, game, game.gameId]);
+  }, [dispatch, gameId]);
+
+  const connectionState = useSelector((state) => state.hubConnectionState);
+
+  const doReconnect = () => {
+    dispatch(reconnectHubAction());
+  };
+
+  let statusAlert = null;
+  switch (connectionState) {
+    case HubConnectionState.Connecting:
+    case HubConnectionState.Reconnecting:
+      statusAlert = <Alert>Connecting to game...</Alert>;
+      break;
+    case HubConnectionState.Disconnected:
+      statusAlert = (
+        <Alert>
+          <Button color="link" className="p-0" onClick={doReconnect}>
+            Click to refresh game
+          </Button>
+        </Alert>
+      );
+      break;
+    default:
+      statusAlert = null;
+  }
 
   return (
     <div className="container-sm mt-4">
+      {statusAlert}
       <CurrentPlayerHand game={game} />
 
       {game.otherPlayerHands.map((hand) => (
